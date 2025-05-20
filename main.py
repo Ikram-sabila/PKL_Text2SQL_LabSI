@@ -19,6 +19,26 @@ def get_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
 
+# ==== DETEKSI SQL BERBAHAYA ====
+def is_dangerous_query(sql):
+    dangerous = ['drop', 'delete', 'truncate', 'alter', 'update', 'insert']
+    tokens = re.findall(r'\b\w+\b', sql.lower())
+    return any(word in tokens for word in dangerous)
+
+# ==== DETECT RELEVANT TABLES ====
+def detect_relevant_tables(prompt, tabel_info):
+    relevant = {}
+    prompt_lower = prompt.lower()
+    for table, columns in tabel_info.items():
+        if table.lower() in prompt_lower:
+            relevant[table] = columns
+        else:
+            for col in columns:
+                if col.lower() in prompt_lower:
+                    relevant[table] = columns
+                    break
+    return relevant
+
 # ==== LLM: TEXT TO SQL ====
 def text_to_sql(prompt):
     relevant_tables = detect_relevant_tables(prompt, extract_mysql.tabel_info)
@@ -52,26 +72,6 @@ def text_to_sql(prompt):
         return result.get("response", "").strip()
     except Exception as e:
         return f"❌ Error: {str(e)}"
-    
-# ==== DETEKSI SQL BERBAHAYA ====
-def is_dangerous_query(sql):
-    dangerous = ['drop', 'delete', 'truncate', 'alter', 'update', 'insert']
-    tokens = re.findall(r'\b\w+\b', sql.lower())
-    return any(word in tokens for word in dangerous)
-
-# ==== DETECT RELEVANT TABLES ====
-def detect_relevant_tables(prompt, tabel_info):
-    relevant = {}
-    prompt_lower = prompt.lower()
-    for table, columns in tabel_info.items():
-        if table.lower() in prompt_lower:
-            relevant[table] = columns
-        else:
-            for col in columns:
-                if col.lower() in prompt_lower:
-                    relevant[table] = columns
-                    break
-    return relevant
 
 # ==== RUN SQL ====
 def run_sql(sql):
@@ -81,8 +81,6 @@ def run_sql(sql):
         cursor.execute(sql)
         results = cursor.fetchall()
         cursor.close()
-        # print("Hasil dari cursor.fetchall():")
-        print(results)
         return pd.DataFrame(results)
     except Exception as e:
         return f"❌ Query Execution Error: {str(e)}"
@@ -98,20 +96,32 @@ for table, columns in extract_mysql.tabel_info.items():
 st.title("💬 Text to SQL Generator + Executor")
 st.markdown("Ketik pertanyaan dalam bahasa natural, lalu lihat hasil SQL-nya dan jalankan langsung.")
 
-question = st.text_area("Pertanyaan (Natural Language):", height=150)
+# Inisialisasi session_state
+if "question" not in st.session_state:
+    st.session_state.question = ""
+if "generated_sql" not in st.session_state:
+    st.session_state.generated_sql = ""
 
-sql_result = ""
+# Text area input
+question = st.text_area(
+    "Pertanyaan (Natural Language):",
+    value=st.session_state.question,
+    height=150,
+    key="question"
+)
+
+# ==== BUTTON CONVERT ====
 if st.button("🔍 Convert to SQL"):
-    if question.strip() == "":
+    if st.session_state.question.strip() == "":
         st.warning("Masukkan pertanyaan dulu ya.")
     else:
         with st.spinner("Menggunakan Mistral via Ollama..."):
-            sql_result = text_to_sql(question)
+            sql_result = text_to_sql(st.session_state.question)
         st.session_state.generated_sql = sql_result
         st.code(sql_result, language="sql")
 
-# ==== EXECUTE SQL ====
-if "generated_sql" in st.session_state:
+# ==== BUTTON EXECUTE ====
+if st.session_state.generated_sql:
     if st.button("Execute SQL"):
         sql = st.session_state.generated_sql
         st.code(sql, language="sql")
