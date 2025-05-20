@@ -34,24 +34,14 @@ Aplikasi ini memungkinkan pengguna untuk mengetikkan pertanyaan dalam Bahasa Nat
 1. **Clone repo dan masuk ke folder proyek:**
 
    ```bash
-   git clone <repo-url>
-   cd <folder-proyek>
+   git clone <[repo-url](https://github.com/Ikram-sabila/PKL_Text2SQL_LabSI)>
+   cd <PKL_Text2SQL_LabSI>
    ```
 
 2. **Install dependencies:**
 
    ```bash
    pip install -r requirements.txt
-   ```
-
-   Isi `requirements.txt`:
-
-   ```txt
-   streamlit
-   pymysql
-   requests
-   pandas
-   sqlalchemy
    ```
 
 3. **Instal dan jalankan Ollama:**
@@ -69,14 +59,14 @@ Aplikasi ini memungkinkan pengguna untuk mengetikkan pertanyaan dalam Bahasa Nat
 4. **Jalankan aplikasi:**
 
    ```bash
-   streamlit run app.py
+   streamlit run main.py
    ```
 
 ---
 
 ## 🗄️ Konfigurasi Database
 
-Ubah konfigurasi koneksi database di bagian ini (dalam file `app.py`):
+Ubah konfigurasi koneksi database di bagian ini (dalam file `main.py`):
 
 ```python
 pymysql.connect(
@@ -137,3 +127,11 @@ Dikembangkan menggunakan:
 * MySQL
 
 ---
+
+### ✨ Dibuat oleh
+
+Proyek ini dikerjakan oleh:
+
+- 🧑‍💻 **Muhammad Ikram Sabila Rasyad** – ([https://github.com/Ikram-sabila](https://github.com/Ikram-sabila))
+- 👩‍💻 **Ananda Annisa Sungkar** – ([https://github.com/annisasungkar](https://github.com/annisasungkar))
+- 👨‍💻 **Salma Adzra Fathina** – ([https://github.com/salmafthn](https://github.com/salmafthn))
